@@ -1,11 +1,21 @@
 package main
 
+type Shape int64
+
+const (
+	Rectangle Shape = iota
+	Oval
+)
+
 type Room struct {
 	Id          int64
 	Name        string
 	NearbyRooms []int64
 	Width       uint
 	Height      uint
+	Shape       Shape
+	isSpawnable bool
+	containsW   bool
 }
 
 func (x Room) isEqual(y Room) bool {
@@ -23,4 +33,8 @@ func (x Room) isNearby(y Room) bool {
 		}
 	}
 	return false
+}
+
+func (x Room) isRectangular() bool {
+	return x.Shape == Rectangle
 }

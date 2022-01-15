@@ -2,16 +2,22 @@ package main
 
 import (
 	"cart/w4"
+	"math/rand"
 	"strconv"
 )
 
 var smallDungeon = []Room{
-	{Id: 0, Name: "Placeholder Because I'm Lazy"},
-	{Id: 1, Name: "First Room", Height: 60, Width: 75, NearbyRooms: []int64{2, 3, 4}},
-	{Id: 2, Name: "Side Hallway", Height: 72, Width: 10, NearbyRooms: []int64{1, 3}},
-	{Id: 3, Name: "Kitchen", Height: 40, Width: 45, NearbyRooms: []int64{1, 2}},
-	{Id: 4, Name: "Closet", Height: 20, Width: 20, NearbyRooms: []int64{1}},
+	{Id: 0, Name: "Placeholder Because I'm Lazy", isSpawnable: false},
+	{Id: 1, Name: "Main Foyer", Shape: Oval, Height: 60, Width: 75, NearbyRooms: []int64{2, 3, 4, 5}},
+	{Id: 2, Name: "Side Hallway", Shape: Rectangle, Height: 72, Width: 10, NearbyRooms: []int64{1, 3}},
+	{Id: 3, Name: "Kitchen", Shape: Rectangle, Height: 40, Width: 45, isSpawnable: true, NearbyRooms: []int64{1, 2}},
+	{Id: 4, Name: "Closet", Shape: Rectangle, Height: 20, Width: 20, NearbyRooms: []int64{1}},
+	{Id: 5, Name: "Staircase", Shape: Rectangle, Height: 40, Width: 15, NearbyRooms: []int64{1, 6}},
+	{Id: 6, Name: "Observatory", Shape: Oval, Height: 75, Width: 75, isSpawnable: true, NearbyRooms: []int64{5}},
 }
+
+var r = rand.New(rand.NewSource(2))
+var RandomOrder = r.Perm(len(smallDungeon) + 1)
 
 var smiley = [8]byte{
 	0b11000011,
@@ -35,6 +41,16 @@ var menuOption = 0
 var currentRoom = 1
 var previousGamepad byte
 
+//go:export start
+func start() {
+	for _, i := range RandomOrder {
+		if smallDungeon[i].isSpawnable {
+			smallDungeon[i].containsW = true
+			break
+		}
+	}
+}
+
 //go:export update
 func update() {
 
@@ -46,15 +62,27 @@ func update() {
 	var pressedThisFrame = gamepad & (gamepad ^ previousGamepad)
 	previousGamepad = gamepad
 
-	*w4.DRAW_COLORS = 2
+	if smallDungeon[currentRoom].containsW {
+		w4.Text("death", 120, 10)
+	}
+
+	*w4.DRAW_COLORS = 4
 
 	w4.Text(smallDungeon[currentRoom].Name, 10, 10)
 
-	w4.Rect(
-		centerX-int(smallDungeon[currentRoom].Width/2)+mapOffsetX,
-		centerY-int(smallDungeon[currentRoom].Height/2)+mapOffsetY,
-		smallDungeon[currentRoom].Width,
-		smallDungeon[currentRoom].Height)
+	if smallDungeon[currentRoom].isRectangular() {
+		w4.Rect(
+			centerX-int(smallDungeon[currentRoom].Width/2)+mapOffsetX,
+			centerY-int(smallDungeon[currentRoom].Height/2)+mapOffsetY,
+			smallDungeon[currentRoom].Width,
+			smallDungeon[currentRoom].Height)
+	} else {
+		w4.Oval(
+			centerX-int(smallDungeon[currentRoom].Width/2)+mapOffsetX,
+			centerY-int(smallDungeon[currentRoom].Height/2)+mapOffsetY,
+			smallDungeon[currentRoom].Width,
+			smallDungeon[currentRoom].Height)
+	}
 
 	w4.Text("Nearby Rooms", 10, 140)
 	for index, i := range smallDungeon[currentRoom].NearbyRooms {
