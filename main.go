@@ -37,6 +37,11 @@ var previousGamepad byte
 
 //go:export update
 func update() {
+
+	w4.PALETTE[0] = 0x6969
+	w4.PALETTE[1] = 0x7c3f58
+	w4.PALETTE[2] = 0xeb6b6f
+	w4.PALETTE[3] = 0xf9a875
 	var gamepad = *w4.GAMEPAD1
 	var pressedThisFrame = gamepad & (gamepad ^ previousGamepad)
 	previousGamepad = gamepad
