@@ -16,6 +16,7 @@ type Room struct {
 	Shape       Shape
 	isSpawnable bool
 	containsW   bool
+	Description string
 }
 
 func (x Room) isEqual(y Room) bool {
